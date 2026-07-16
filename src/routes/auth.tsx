@@ -29,6 +29,8 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [verifySent, setVerifySent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
