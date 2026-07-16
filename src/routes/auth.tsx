@@ -92,6 +92,31 @@ function AuthPage() {
     }
   }
 
+  async function handleResendVerification() {
+    if (resendCooldown > 0 || !email) return;
+    setResendLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) throw error;
+      toast.success("Verification email resent. Please check your inbox.");
+      setResendCooldown(60);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to resend verification email");
+    } finally {
+      setResendLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
