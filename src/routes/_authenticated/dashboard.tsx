@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getDashboard, startFreeTrial } from "@/lib/mining.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Cpu, TrendingUp, Wallet as WalletIcon, Users, Gift, Zap, Sparkles } from "lucide-react";
+import { Cpu, TrendingUp, Wallet as WalletIcon, Users, Gift, Zap, Sparkles, Crown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -77,6 +77,22 @@ function Dashboard() {
           <Sparkles className="h-3 w-3 mr-1" /> VIP {profile?.vip_level ?? 0}
         </Badge>
       </div>
+
+      <Link
+        to="/upgrade"
+        className="mb-4 flex items-center justify-between rounded-2xl border border-gold/30 bg-gradient-to-r from-gold/15 via-primary/10 to-transparent px-4 py-3 shadow-card hover:opacity-90 transition-opacity"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gold/20 flex items-center justify-center">
+            <Crown className="h-5 w-5 text-gold" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold">Upgrade your tier</p>
+            <p className="text-xs text-muted-foreground">View Tier 1 – Tier 6 mining plans</p>
+          </div>
+        </div>
+        <span className="text-xs font-semibold text-gold">View →</span>
+      </Link>
 
       <Card className="relative overflow-hidden bg-gradient-hero border-border p-6 mb-4 shadow-card">
         <div className="absolute inset-0 bg-gradient-primary opacity-10 pointer-events-none" />
