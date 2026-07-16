@@ -21,12 +21,14 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [refCode, setRefCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifySent, setVerifySent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -41,18 +43,25 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "signup") {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setResetSent(true);
+        toast.success("Password reset email sent");
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/dashboard`,
             data: { full_name: fullName, referral_code: refCode || undefined },
           },
         });
         if (error) throw error;
-        toast.success("Account created! Welcome to TradeNova.");
-        navigate({ to: "/dashboard", replace: true });
+        setVerifySent(true);
+        toast.success("Verification email sent. Please check your inbox.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -92,6 +101,29 @@ function AuthPage() {
         </Link>
 
         <Card className="p-6 bg-gradient-surface border-border shadow-card">
+          {verifySent ? (
+            <div className="text-center space-y-4 py-4">
+              <h2 className="text-xl font-bold">Verify your email</h2>
+              <p className="text-sm text-muted-foreground">
+                We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Click the link to activate your account and you'll land on your dashboard.
+              </p>
+              <Button variant="outline" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
+                Back to sign in
+              </Button>
+            </div>
+          ) : resetSent ? (
+            <div className="text-center space-y-4 py-4">
+              <h2 className="text-xl font-bold">Check your email</h2>
+              <p className="text-sm text-muted-foreground">
+                We sent a password reset link to <span className="text-foreground font-medium">{email}</span>.
+              </p>
+              <Button variant="outline" className="w-full" onClick={() => { setResetSent(false); setMode("signin"); }}>
+                Back to sign in
+              </Button>
+            </div>
+          ) : (
+          <>
+          {mode !== "forgot" && (
           <div className="mb-6 flex gap-2 rounded-lg bg-muted p-1">
             <button
               type="button"
@@ -108,7 +140,15 @@ function AuthPage() {
               Sign up
             </button>
           </div>
+          )}
+          {mode === "forgot" && (
+            <div className="mb-6">
+              <h2 className="text-xl font-bold">Reset your password</h2>
+              <p className="text-sm text-muted-foreground mt-1">Enter your email and we'll send you a reset link.</p>
+            </div>
+          )}
 
+          {mode !== "forgot" && (
           <Button
             type="button"
             variant="outline"
@@ -124,13 +164,16 @@ function AuthPage() {
             </svg>
             Continue with Google
           </Button>
+          )}
 
+          {mode !== "forgot" && (
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-card px-2 text-muted-foreground">or</span>
             </div>
           </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
@@ -143,10 +186,19 @@ function AuthPage() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-            </div>
+            {mode !== "forgot" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === "signin" && (
+                    <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              </div>
+            )}
             {mode === "signup" && (
               <div className="space-y-2">
                 <Label htmlFor="ref">Referral code <span className="text-muted-foreground">(optional)</span></Label>
@@ -155,9 +207,16 @@ function AuthPage() {
             )}
             <Button type="submit" className="w-full h-11 bg-gradient-primary shadow-glow font-semibold" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
             </Button>
+            {mode === "forgot" && (
+              <button type="button" onClick={() => setMode("signin")} className="w-full text-xs text-muted-foreground hover:text-foreground">
+                ← Back to sign in
+              </button>
+            )}
           </form>
+          </>
+          )}
         </Card>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
