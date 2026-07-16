@@ -134,7 +134,16 @@ function AuthPage() {
               <p className="text-sm text-muted-foreground">
                 We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Click the link to activate your account and you'll land on your dashboard.
               </p>
-              <Button variant="outline" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleResendVerification}
+                disabled={resendLoading || resendCooldown > 0}
+              >
+                {resendLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
                 Back to sign in
               </Button>
             </div>
