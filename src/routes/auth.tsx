@@ -29,8 +29,6 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [verifySent, setVerifySent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -92,30 +90,6 @@ function AuthPage() {
     }
   }
 
-  async function handleResendVerification() {
-    if (resendCooldown > 0 || !email) return;
-    setResendLoading(true);
-    try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-      });
-      if (error) throw error;
-      toast.success("Verification email resent. Please check your inbox.");
-      setResendCooldown(60);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to resend verification email");
-    } finally {
-      setResendLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [resendCooldown]);
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-10">
@@ -134,15 +108,6 @@ function AuthPage() {
               <p className="text-sm text-muted-foreground">
                 We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Click the link to activate your account and you'll land on your dashboard.
               </p>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleResendVerification}
-                disabled={resendLoading || resendCooldown > 0}
-              >
-                {resendLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
-              </Button>
               <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
                 Back to sign in
               </Button>
