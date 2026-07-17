@@ -27,6 +27,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [refCode, setRefCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifySent, setVerifySent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ function AuthPage() {
         setResetSent(true);
         toast.success("Password reset email sent");
       } else if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -59,12 +60,8 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        if (!data.session) {
-          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInError) throw signInError;
-        }
-        toast.success("Account created");
-        navigate({ to: "/dashboard", replace: true });
+        setVerifySent(true);
+        toast.success("Verification email sent. Please check your inbox.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -104,7 +101,36 @@ function AuthPage() {
         </Link>
 
         <Card className="p-6 bg-gradient-surface border-border shadow-card">
-          {resetSent ? (
+          {verifySent ? (
+            <div className="text-center space-y-4 py-4">
+              <h2 className="text-xl font-bold">Verify your email</h2>
+              <p className="text-sm text-muted-foreground">
+                We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Open it in Gmail to activate your account — you'll land on your dashboard.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const { error } = await supabase.auth.resend({
+                      type: "signup",
+                      email,
+                      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+                    });
+                    if (error) throw error;
+                    toast.success("Verification email resent");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Failed to resend email");
+                  }
+                }}
+              >
+                Resend verification email
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
+                Back to sign in
+              </Button>
+            </div>
+          ) : resetSent ? (
             <div className="text-center space-y-4 py-4">
               <h2 className="text-xl font-bold">Check your email</h2>
               <p className="text-sm text-muted-foreground">
