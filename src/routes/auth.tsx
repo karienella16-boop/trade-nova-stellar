@@ -107,7 +107,26 @@ function AuthPage() {
               <p className="text-sm text-muted-foreground">
                 We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Click the link to activate your account and you'll land on your dashboard.
               </p>
-              <Button variant="outline" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const { error } = await supabase.auth.resend({
+                      type: "signup",
+                      email,
+                      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+                    });
+                    if (error) throw error;
+                    toast.success("Verification email resent");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Failed to resend email");
+                  }
+                }}
+              >
+                Resend verification email
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
                 Back to sign in
               </Button>
             </div>
