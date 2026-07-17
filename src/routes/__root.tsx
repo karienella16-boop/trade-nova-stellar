@@ -82,14 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "TradeNova Mining — Premium Cloud Mining Platform" },
       { name: "description", content: "Earn daily crypto rewards with TradeNova cloud mining. Choose a mining plan, track earnings in real time, and withdraw fast." },
       { name: "author", content: "TradeNova" },
-      { property: "og:title", content: "TradeNova Mining — Premium Cloud Mining Platform" },
-      { property: "og:description", content: "Earn daily crypto rewards with TradeNova cloud mining. Choose a mining plan, track earnings in real time, and withdraw fast." },
+      { property: "og:title", content: "TradeNova Mining" },
+      { property: "og:description", content: "Premium cloud mining platform. Real-time earnings, secure wallet, fast withdrawals." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "TradeNova Mining — Premium Cloud Mining Platform" },
-      { name: "twitter:description", content: "Earn daily crypto rewards with TradeNova cloud mining. Choose a mining plan, track earnings in real time, and withdraw fast." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/30f38b7d-0e4c-43e4-b73b-9368f6a00e8e/id-preview-4afe7286--7b29ceef-e871-4a5f-af31-584f7b45dcc1.lovable.app-1784233313156.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/30f38b7d-0e4c-43e4-b73b-9368f6a00e8e/id-preview-4afe7286--7b29ceef-e871-4a5f-af31-584f7b45dcc1.lovable.app-1784233313156.png" },
     ],
     links: [
       {

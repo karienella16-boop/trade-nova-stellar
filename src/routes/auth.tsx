@@ -90,7 +90,6 @@ function AuthPage() {
     }
   }
 
-
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
@@ -108,7 +107,7 @@ function AuthPage() {
               <p className="text-sm text-muted-foreground">
                 We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Click the link to activate your account and you'll land on your dashboard.
               </p>
-              <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
+              <Button variant="outline" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
                 Back to sign in
               </Button>
             </div>
