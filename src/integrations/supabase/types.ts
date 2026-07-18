@@ -152,6 +152,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string | null
           created_at: string
           display_id: string
           email: string | null
@@ -165,10 +166,12 @@ export type Database = {
           two_factor_enabled: boolean
           updated_at: string
           user_id: string
+          username: string | null
           vip_level: number
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           display_id: string
           email?: string | null
@@ -182,10 +185,12 @@ export type Database = {
           two_factor_enabled?: boolean
           updated_at?: string
           user_id: string
+          username?: string | null
           vip_level?: number
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           display_id?: string
           email?: string | null
@@ -199,6 +204,7 @@ export type Database = {
           two_factor_enabled?: boolean
           updated_at?: string
           user_id?: string
+          username?: string | null
           vip_level?: number
         }
         Relationships: []
