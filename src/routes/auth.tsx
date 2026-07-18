@@ -60,8 +60,10 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        setVerifySent(true);
-        toast.success("Verification email sent. Please check your inbox.");
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) throw signInErr;
+        toast.success("Account created");
+        navigate({ to: "/dashboard", replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
