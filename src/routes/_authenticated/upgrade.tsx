@@ -82,7 +82,8 @@ function UpgradePage() {
             </div>
 
             <Link
-              to="/wallet"
+              to="/checkout"
+              search={{ tier: t.n }}
               className={`inline-flex w-full h-11 items-center justify-center rounded-md px-4 text-sm font-semibold transition-opacity hover:opacity-90 ${
                 t.highlight
                   ? "bg-gradient-primary text-primary-foreground shadow-glow"
