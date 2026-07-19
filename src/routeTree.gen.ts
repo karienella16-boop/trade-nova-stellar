@@ -20,6 +20,7 @@ import { Route as AuthenticatedReferralsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedMiningRouteImport } from './routes/_authenticated/mining'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -75,12 +76,18 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/mining': typeof AuthenticatedMiningRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/mining': typeof AuthenticatedMiningRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/mining': typeof AuthenticatedMiningRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/verify-email'
+    | '/checkout'
     | '/dashboard'
     | '/mining'
     | '/profile'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/verify-email'
+    | '/checkout'
     | '/dashboard'
     | '/mining'
     | '/profile'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/verify-email'
+    | '/_authenticated/checkout'
     | '/_authenticated/dashboard'
     | '/_authenticated/mining'
     | '/_authenticated/profile'
@@ -241,10 +253,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/checkout': {
+      id: '/_authenticated/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMiningRoute: typeof AuthenticatedMiningRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -254,6 +274,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMiningRoute: AuthenticatedMiningRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
