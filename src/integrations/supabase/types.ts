@@ -110,6 +110,99 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_config: {
+        Row: {
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          id: number
+          updated_at: string
+          usdt_bep20: string | null
+          usdt_erc20: string | null
+          usdt_trc20: string | null
+        }
+        Insert: {
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          id?: number
+          updated_at?: string
+          usdt_bep20?: string | null
+          usdt_erc20?: string | null
+          usdt_trc20?: string | null
+        }
+        Update: {
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          id?: number
+          updated_at?: string
+          usdt_bep20?: string | null
+          usdt_erc20?: string | null
+          usdt_trc20?: string | null
+        }
+        Relationships: []
+      }
+      plan_payments: {
+        Row: {
+          admin_note: string | null
+          amount_ngn: number | null
+          amount_usd: number
+          created_at: string
+          duration_days: number
+          id: string
+          method: string
+          network: string | null
+          receipt_url: string | null
+          reference: string
+          reviewed_at: string | null
+          status: string
+          tier_name: string
+          tier_number: number
+          tx_hash: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount_ngn?: number | null
+          amount_usd: number
+          created_at?: string
+          duration_days: number
+          id?: string
+          method: string
+          network?: string | null
+          receipt_url?: string | null
+          reference: string
+          reviewed_at?: string | null
+          status?: string
+          tier_name: string
+          tier_number: number
+          tx_hash?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount_ngn?: number | null
+          amount_usd?: number
+          created_at?: string
+          duration_days?: number
+          id?: string
+          method?: string
+          network?: string | null
+          receipt_url?: string | null
+          reference?: string
+          reviewed_at?: string | null
+          status?: string
+          tier_name?: string
+          tier_number?: number
+          tx_hash?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           daily_earnings: number
