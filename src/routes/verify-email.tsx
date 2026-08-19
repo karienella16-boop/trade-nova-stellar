@@ -84,25 +84,6 @@ function VerifyEmailPage() {
     }
   }
 
-  async function refreshUnused() {
-    setChecking(true);
-    try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error) throw error;
-      const u = data.user;
-      if (u && (u.email_confirmed_at || u.confirmed_at)) {
-        toast.success("Email verified");
-        navigate({ to: "/dashboard", replace: true });
-      } else {
-        toast.info("Not verified yet. Please click the link in your email.");
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not check status");
-    } finally {
-      setChecking(false);
-    }
-  }
-
   async function resend() {
     if (!email) return;
     setResending(true);
