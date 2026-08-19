@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { Loader2, Pickaxe } from "lucide-react";
 
@@ -29,6 +30,24 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [verifySent, setVerifySent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
+  async function verifyCode(token: string) {
+    if (token.length !== 6) return;
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+      if (error) throw error;
+      toast.success("Email verified");
+      navigate({ to: "/dashboard", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid or expired code");
+      setCode("");
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -103,10 +122,37 @@ function AuthPage() {
         <Card className="p-6 bg-gradient-surface border-border shadow-card">
           {verifySent ? (
             <div className="text-center space-y-4 py-4">
-              <h2 className="text-xl font-bold">Verify your email</h2>
+              <h2 className="text-xl font-bold">Enter your verification code</h2>
               <p className="text-sm text-muted-foreground">
-                We sent a verification link to <span className="text-foreground font-medium">{email}</span>. Open it in Gmail to activate your account — you'll land on your dashboard.
+                We sent a 6-digit code to <span className="text-foreground font-medium">{email}</span>. Enter it below to activate your account.
               </p>
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={code}
+                  onChange={(v) => {
+                    setCode(v);
+                    if (v.length === 6) void verifyCode(v);
+                  }}
+                  disabled={verifying}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <Button
+                className="w-full h-11 bg-gradient-primary shadow-glow font-semibold"
+                onClick={() => verifyCode(code)}
+                disabled={verifying || code.length !== 6}
+              >
+                {verifying ? "Verifying..." : "Verify & continue"}
+              </Button>
               <Button
                 variant="outline"
                 className="w-full"
@@ -118,13 +164,13 @@ function AuthPage() {
                       options: { emailRedirectTo: `${window.location.origin}/dashboard` },
                     });
                     if (error) throw error;
-                    toast.success("Verification email resent");
+                    toast.success("New code sent");
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : "Failed to resend email");
                   }
                 }}
               >
-                Resend verification email
+                Resend code
               </Button>
               <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
                 Back to sign in
