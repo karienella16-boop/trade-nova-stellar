@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { MailCheck, Pickaxe, LogOut, RefreshCw } from "lucide-react";
 
@@ -22,6 +23,8 @@ function VerifyEmailPage() {
   const [email, setEmail] = useState<string>("");
   const [checking, setChecking] = useState(false);
   const [resending, setResending] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -47,6 +50,41 @@ function VerifyEmailPage() {
   }, [navigate]);
 
   async function refresh() {
+    setChecking(true);
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+      const u = data.user;
+      if (u && (u.email_confirmed_at || u.confirmed_at)) {
+        toast.success("Email verified");
+        navigate({ to: "/dashboard", replace: true });
+      } else {
+        toast.info("Not verified yet. Enter the code from your email.");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not check status");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function verifyCode(token: string) {
+    if (!email || token.length !== 6) return;
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+      if (error) throw error;
+      toast.success("Email verified");
+      navigate({ to: "/dashboard", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid or expired code");
+      setCode("");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  async function refreshUnused() {
     setChecking(true);
     try {
       const { data, error } = await supabase.auth.refreshSession();
@@ -105,30 +143,57 @@ function VerifyEmailPage() {
           <div className="space-y-2">
             <h1 className="text-xl font-bold">Verify your email</h1>
             <p className="text-sm text-muted-foreground">
-              We sent a verification link to{" "}
+              We sent a 6-digit verification code to{" "}
               <span className="text-foreground font-medium">{email || "your inbox"}</span>.
-              Open it to activate your account and access your dashboard.
+              Enter it below to activate your account.
             </p>
           </div>
 
+          <div className="flex justify-center">
+            <InputOTP
+              maxLength={6}
+              value={code}
+              onChange={(v) => {
+                setCode(v);
+                if (v.length === 6) void verifyCode(v);
+              }}
+              disabled={verifying}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+
+          <Button
+            className="w-full h-11 bg-gradient-primary shadow-glow font-semibold"
+            onClick={() => verifyCode(code)}
+            disabled={verifying || code.length !== 6}
+          >
+            {verifying ? "Verifying..." : "Verify & continue"}
+          </Button>
+
           <a
-            href="https://mail.google.com/mail/u/0/#search/from%3Ano-reply+subject%3A(confirm+OR+verify)"
+            href="https://mail.google.com/mail/u/0/#search/subject%3A(confirm+OR+verify)"
             target="_blank"
             rel="noreferrer"
             className="block"
           >
-            <Button className="w-full h-11 bg-gradient-primary shadow-glow font-semibold">
-              Open Gmail
-            </Button>
+            <Button variant="outline" className="w-full">Open Gmail</Button>
           </a>
 
-          <Button variant="outline" className="w-full" onClick={refresh} disabled={checking}>
+          <Button variant="ghost" className="w-full" onClick={refresh} disabled={checking}>
             <RefreshCw className={`h-4 w-4 mr-2 ${checking ? "animate-spin" : ""}`} />
             I've verified — continue
           </Button>
 
           <Button variant="ghost" className="w-full" onClick={resend} disabled={resending || !email}>
-            {resending ? "Sending..." : "Resend verification email"}
+            {resending ? "Sending..." : "Resend code"}
           </Button>
 
           <button
