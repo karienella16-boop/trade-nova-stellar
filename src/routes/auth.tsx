@@ -56,11 +56,17 @@ function AuthPage() {
   }, [lockedUntil]);
 
   async function verifyCode(token: string) {
-    if (token.length !== 6 || locked) return;
+    if (token.length !== 6 || locked || verifying) return;
+    const last = lastSubmittedCode.current;
+    if (last === token) return;
+    lastSubmittedCode.current = token;
     setVerifying(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
-      if (error) throw error;
+      if (error) {
+        lastSubmittedCode.current = "";
+        throw error;
+      }
       toast.success("Email verified");
       setAttempts(0);
       navigate({ to: "/dashboard", replace: true });
@@ -80,6 +86,24 @@ function AuthPage() {
       setVerifying(false);
     }
   }
+
+  async function pasteCode() {
+    try {
+      const text = await navigator.clipboard.readText();
+      const digits = text.replace(/\D/g, "").slice(0, 6);
+      if (digits.length === 6) {
+        setCode(digits);
+        await verifyCode(digits);
+      } else if (digits.length > 0) {
+        setCode(digits);
+      } else {
+        toast.info("No valid code found in clipboard");
+      }
+    } catch {
+      toast.error("Could not access clipboard. Please paste manually.");
+    }
+  }
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
