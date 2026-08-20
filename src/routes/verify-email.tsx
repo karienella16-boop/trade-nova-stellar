@@ -20,6 +20,7 @@ export const Route = createFileRoute("/verify-email")({
 
 function VerifyEmailPage() {
   const navigate = useNavigate();
+  const lastSubmittedCode = useRef<string>("");
   const [email, setEmail] = useState<string>("");
   const [checking, setChecking] = useState(false);
   const [resending, setResending] = useState(false);
