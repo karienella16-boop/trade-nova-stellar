@@ -25,6 +25,28 @@ function VerifyEmailPage() {
   const [resending, setResending] = useState(false);
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [lockRemaining, setLockRemaining] = useState(0);
+
+  const MAX_ATTEMPTS = 5;
+  const LOCK_SECONDS = 300;
+  const locked = lockRemaining > 0;
+
+  useEffect(() => {
+    if (!lockedUntil) return;
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+      setLockRemaining(left);
+      if (left === 0) {
+        setLockedUntil(null);
+        setAttempts(0);
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [lockedUntil]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -69,23 +91,33 @@ function VerifyEmailPage() {
   }
 
   async function verifyCode(token: string) {
-    if (!email || token.length !== 6) return;
+    if (!email || token.length !== 6 || locked) return;
     setVerifying(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
       if (error) throw error;
       toast.success("Email verified");
+      setAttempts(0);
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Invalid or expired code");
+      const next = attempts + 1;
+      setAttempts(next);
       setCode("");
+      if (next >= MAX_ATTEMPTS) {
+        setLockedUntil(Date.now() + LOCK_SECONDS * 1000);
+        toast.error("Too many failed attempts. Verification locked for 5 minutes.");
+      } else {
+        toast.error(
+          `${err instanceof Error ? err.message : "Invalid or expired code"} — ${MAX_ATTEMPTS - next} attempt${MAX_ATTEMPTS - next === 1 ? "" : "s"} left`,
+        );
+      }
     } finally {
       setVerifying(false);
     }
   }
 
   async function resend() {
-    if (!email) return;
+    if (!email || locked) return;
     setResending(true);
     try {
       const { error } = await supabase.auth.resend({
@@ -138,7 +170,7 @@ function VerifyEmailPage() {
                 setCode(v);
                 if (v.length === 6) void verifyCode(v);
               }}
-              disabled={verifying}
+              disabled={verifying || locked}
             >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
@@ -151,12 +183,19 @@ function VerifyEmailPage() {
             </InputOTP>
           </div>
 
+          {locked && (
+            <p className="text-sm text-destructive">
+              Too many failed attempts. Try again in {Math.floor(lockRemaining / 60)}:
+              {String(lockRemaining % 60).padStart(2, "0")}.
+            </p>
+          )}
+
           <Button
             className="w-full h-11 bg-gradient-primary shadow-glow font-semibold"
             onClick={() => verifyCode(code)}
-            disabled={verifying || code.length !== 6}
+            disabled={verifying || locked || code.length !== 6}
           >
-            {verifying ? "Verifying..." : "Verify & continue"}
+            {verifying ? "Verifying..." : locked ? "Locked" : "Verify & continue"}
           </Button>
 
           <a
@@ -173,7 +212,7 @@ function VerifyEmailPage() {
             I've verified — continue
           </Button>
 
-          <Button variant="ghost" className="w-full" onClick={resend} disabled={resending || !email}>
+          <Button variant="ghost" className="w-full" onClick={resend} disabled={resending || !email || locked}>
             {resending ? "Sending..." : "Resend code"}
           </Button>
 
