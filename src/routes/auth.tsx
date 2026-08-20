@@ -185,12 +185,14 @@ function AuthPage() {
               </p>
               <div className="flex justify-center">
                 <InputOTP
+                  ref={otpRef}
                   maxLength={6}
                   value={code}
-                  onChange={(v) => {
-                    setCode(v);
-                    if (v.length === 6) void verifyCode(v);
-                  }}
+                  onChange={(v) => setCode(v)}
+                  onComplete={(v) => verifyCode(v)}
+                  autoFocus
+                  inputMode="numeric"
+                  pattern="^[0-9]{6}$"
                   disabled={verifying || locked}
                 >
                   <InputOTPGroup>
@@ -215,6 +217,14 @@ function AuthPage() {
                 disabled={verifying || locked || code.length !== 6}
               >
                 {verifying ? "Verifying..." : locked ? "Locked" : "Verify & continue"}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={locked || verifying}
+                onClick={pasteCode}
+              >
+                Paste code
               </Button>
               <Button
                 variant="outline"
