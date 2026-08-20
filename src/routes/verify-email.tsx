@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/verify-email")({
 
 function VerifyEmailPage() {
   const navigate = useNavigate();
+  const lastSubmittedCode = useRef<string>("");
   const [email, setEmail] = useState<string>("");
   const [checking, setChecking] = useState(false);
   const [resending, setResending] = useState(false);
@@ -91,11 +92,17 @@ function VerifyEmailPage() {
   }
 
   async function verifyCode(token: string) {
-    if (!email || token.length !== 6 || locked) return;
+    if (!email || token.length !== 6 || locked || verifying) return;
+    const last = lastSubmittedCode.current;
+    if (last === token) return;
+    lastSubmittedCode.current = token;
     setVerifying(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
-      if (error) throw error;
+      if (error) {
+        lastSubmittedCode.current = "";
+        throw error;
+      }
       toast.success("Email verified");
       setAttempts(0);
       navigate({ to: "/dashboard", replace: true });
@@ -115,6 +122,24 @@ function VerifyEmailPage() {
       setVerifying(false);
     }
   }
+
+  async function pasteCode() {
+    try {
+      const text = await navigator.clipboard.readText();
+      const digits = text.replace(/\D/g, "").slice(0, 6);
+      if (digits.length === 6) {
+        setCode(digits);
+        await verifyCode(digits);
+      } else if (digits.length > 0) {
+        setCode(digits);
+      } else {
+        toast.info("No valid code found in clipboard");
+      }
+    } catch {
+      toast.error("Could not access clipboard. Please paste manually.");
+    }
+  }
+
 
   async function resend() {
     if (!email || locked) return;
@@ -166,10 +191,11 @@ function VerifyEmailPage() {
             <InputOTP
               maxLength={6}
               value={code}
-              onChange={(v) => {
-                setCode(v);
-                if (v.length === 6) void verifyCode(v);
-              }}
+              onChange={(v) => setCode(v)}
+              onComplete={(v) => verifyCode(v)}
+              autoFocus
+              inputMode="numeric"
+              pattern="^[0-9]{6}$"
               disabled={verifying || locked}
             >
               <InputOTPGroup>
@@ -210,6 +236,10 @@ function VerifyEmailPage() {
           <Button variant="ghost" className="w-full" onClick={refresh} disabled={checking}>
             <RefreshCw className={`h-4 w-4 mr-2 ${checking ? "animate-spin" : ""}`} />
             I've verified — continue
+          </Button>
+
+          <Button variant="outline" className="w-full" disabled={locked || verifying} onClick={pasteCode}>
+            Paste code
           </Button>
 
           <Button variant="ghost" className="w-full" onClick={resend} disabled={resending || !email || locked}>

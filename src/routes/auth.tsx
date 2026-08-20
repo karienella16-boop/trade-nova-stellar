@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const lastSubmittedCode = useRef<string>("");
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,11 +57,17 @@ function AuthPage() {
   }, [lockedUntil]);
 
   async function verifyCode(token: string) {
-    if (token.length !== 6 || locked) return;
+    if (token.length !== 6 || locked || verifying) return;
+    const last = lastSubmittedCode.current;
+    if (last === token) return;
+    lastSubmittedCode.current = token;
     setVerifying(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
-      if (error) throw error;
+      if (error) {
+        lastSubmittedCode.current = "";
+        throw error;
+      }
       toast.success("Email verified");
       setAttempts(0);
       navigate({ to: "/dashboard", replace: true });
@@ -80,6 +87,24 @@ function AuthPage() {
       setVerifying(false);
     }
   }
+
+  async function pasteCode() {
+    try {
+      const text = await navigator.clipboard.readText();
+      const digits = text.replace(/\D/g, "").slice(0, 6);
+      if (digits.length === 6) {
+        setCode(digits);
+        await verifyCode(digits);
+      } else if (digits.length > 0) {
+        setCode(digits);
+      } else {
+        toast.info("No valid code found in clipboard");
+      }
+    } catch {
+      toast.error("Could not access clipboard. Please paste manually.");
+    }
+  }
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -162,10 +187,11 @@ function AuthPage() {
                 <InputOTP
                   maxLength={6}
                   value={code}
-                  onChange={(v) => {
-                    setCode(v);
-                    if (v.length === 6) void verifyCode(v);
-                  }}
+                  onChange={(v) => setCode(v)}
+                  onComplete={(v) => verifyCode(v)}
+                  autoFocus
+                  inputMode="numeric"
+                  pattern="^[0-9]{6}$"
                   disabled={verifying || locked}
                 >
                   <InputOTPGroup>
@@ -190,6 +216,14 @@ function AuthPage() {
                 disabled={verifying || locked || code.length !== 6}
               >
                 {verifying ? "Verifying..." : locked ? "Locked" : "Verify & continue"}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={locked || verifying}
+                onClick={pasteCode}
+              >
+                Paste code
               </Button>
               <Button
                 variant="outline"
