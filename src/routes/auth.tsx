@@ -185,7 +185,6 @@ function AuthPage() {
               </p>
               <div className="flex justify-center">
                 <InputOTP
-                  ref={otpRef}
                   maxLength={6}
                   value={code}
                   onChange={(v) => setCode(v)}
