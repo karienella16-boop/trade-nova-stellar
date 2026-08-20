@@ -191,10 +191,11 @@ function VerifyEmailPage() {
             <InputOTP
               maxLength={6}
               value={code}
-              onChange={(v) => {
-                setCode(v);
-                if (v.length === 6) void verifyCode(v);
-              }}
+              onChange={(v) => setCode(v)}
+              onComplete={(v) => verifyCode(v)}
+              autoFocus
+              inputMode="numeric"
+              pattern="^[0-9]{6}$"
               disabled={verifying || locked}
             >
               <InputOTPGroup>
@@ -235,6 +236,10 @@ function VerifyEmailPage() {
           <Button variant="ghost" className="w-full" onClick={refresh} disabled={checking}>
             <RefreshCw className={`h-4 w-4 mr-2 ${checking ? "animate-spin" : ""}`} />
             I've verified — continue
+          </Button>
+
+          <Button variant="outline" className="w-full" disabled={locked || verifying} onClick={pasteCode}>
+            Paste code
           </Button>
 
           <Button variant="ghost" className="w-full" onClick={resend} disabled={resending || !email || locked}>
