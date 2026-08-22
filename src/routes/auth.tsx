@@ -52,7 +52,9 @@ function AuthPage() {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
+        try { sessionStorage.setItem("reset_email", email); } catch { /* ignore */ }
         setResetSent(true);
+
         toast.success("Password reset email sent");
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -152,12 +154,17 @@ function AuthPage() {
             <div className="text-center space-y-4 py-4">
               <h2 className="text-xl font-bold">Check your email</h2>
               <p className="text-sm text-muted-foreground">
-                We sent a password reset link to <span className="text-foreground font-medium">{email}</span>.
+                We sent a password reset email to <span className="text-foreground font-medium">{email}</span>. Click
+                the link in it, or enter the reset code from the email.
               </p>
+              <Link to="/reset-password" className="block">
+                <Button className="w-full h-11 bg-gradient-primary shadow-glow font-semibold">Enter reset code</Button>
+              </Link>
               <Button variant="outline" className="w-full" onClick={() => { setResetSent(false); setMode("signin"); }}>
                 Back to sign in
               </Button>
             </div>
+
           ) : (
           <>
           {mode !== "forgot" && (
