@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+
 import { toast } from "sonner";
 import { Loader2, Pickaxe } from "lucide-react";
 
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const lastSubmittedCode = useRef<string>("");
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,79 +30,8 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [verifySent, setVerifySent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const [code, setCode] = useState("");
-  const [verifying, setVerifying] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
-  const [lockRemaining, setLockRemaining] = useState(0);
+  const [resending, setResending] = useState(false);
 
-  const MAX_ATTEMPTS = 5;
-  const LOCK_SECONDS = 300;
-  const locked = lockRemaining > 0;
-
-  useEffect(() => {
-    if (!lockedUntil) return;
-    const tick = () => {
-      const left = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
-      setLockRemaining(left);
-      if (left === 0) {
-        setLockedUntil(null);
-        setAttempts(0);
-      }
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [lockedUntil]);
-
-  async function verifyCode(token: string) {
-    if (token.length !== 6 || locked || verifying) return;
-    const last = lastSubmittedCode.current;
-    if (last === token) return;
-    lastSubmittedCode.current = token;
-    setVerifying(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
-      if (error) {
-        lastSubmittedCode.current = "";
-        throw error;
-      }
-      toast.success("Email verified");
-      setAttempts(0);
-      navigate({ to: "/dashboard", replace: true });
-    } catch (err) {
-      const next = attempts + 1;
-      setAttempts(next);
-      setCode("");
-      if (next >= MAX_ATTEMPTS) {
-        setLockedUntil(Date.now() + LOCK_SECONDS * 1000);
-        toast.error("Too many failed attempts. Verification locked for 5 minutes.");
-      } else {
-        toast.error(
-          `${err instanceof Error ? err.message : "Invalid or expired code"} — ${MAX_ATTEMPTS - next} attempt${MAX_ATTEMPTS - next === 1 ? "" : "s"} left`,
-        );
-      }
-    } finally {
-      setVerifying(false);
-    }
-  }
-
-  async function pasteCode() {
-    try {
-      const text = await navigator.clipboard.readText();
-      const digits = text.replace(/\D/g, "").slice(0, 6);
-      if (digits.length === 6) {
-        setCode(digits);
-        await verifyCode(digits);
-      } else if (digits.length > 0) {
-        setCode(digits);
-      } else {
-        toast.info("No valid code found in clipboard");
-      }
-    } catch {
-      toast.error("Could not access clipboard. Please paste manually.");
-    }
-  }
 
 
   useEffect(() => {
@@ -179,57 +107,25 @@ function AuthPage() {
         <Card className="p-6 bg-gradient-surface border-border shadow-card">
           {verifySent ? (
             <div className="text-center space-y-4 py-4">
-              <h2 className="text-xl font-bold">Enter your verification code</h2>
+              <h2 className="text-xl font-bold">Confirm your email</h2>
               <p className="text-sm text-muted-foreground">
-                We sent a 6-digit code to <span className="text-foreground font-medium">{email}</span>. Enter it below to activate your account.
+                We sent a confirmation link to <span className="text-foreground font-medium">{email}</span>. Click the
+                link in that email to activate your account, then come back and sign in.
               </p>
-              <div className="flex justify-center">
-                <InputOTP
-                  maxLength={6}
-                  value={code}
-                  onChange={(v) => setCode(v)}
-                  onComplete={(v) => verifyCode(v)}
-                  autoFocus
-                  inputMode="numeric"
-                  pattern="^[0-9]{6}$"
-                  disabled={verifying || locked}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-              {locked && (
-                <p className="text-sm text-destructive">
-                  Too many failed attempts. Try again in {Math.floor(lockRemaining / 60)}:
-                  {String(lockRemaining % 60).padStart(2, "0")}.
-                </p>
-              )}
-              <Button
-                className="w-full h-11 bg-gradient-primary shadow-glow font-semibold"
-                onClick={() => verifyCode(code)}
-                disabled={verifying || locked || code.length !== 6}
+              <a
+                href="https://mail.google.com/mail/u/0/#search/subject%3A(confirm+OR+verify)"
+                target="_blank"
+                rel="noreferrer"
+                className="block"
               >
-                {verifying ? "Verifying..." : locked ? "Locked" : "Verify & continue"}
-              </Button>
+                <Button className="w-full h-11 bg-gradient-primary shadow-glow font-semibold">Open Gmail</Button>
+              </a>
               <Button
                 variant="outline"
                 className="w-full"
-                disabled={locked || verifying}
-                onClick={pasteCode}
-              >
-                Paste code
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                disabled={locked}
+                disabled={resending}
                 onClick={async () => {
+                  setResending(true);
                   try {
                     const { error } = await supabase.auth.resend({
                       type: "signup",
@@ -237,18 +133,21 @@ function AuthPage() {
                       options: { emailRedirectTo: `${window.location.origin}/dashboard` },
                     });
                     if (error) throw error;
-                    toast.success("New code sent");
+                    toast.success("Confirmation email resent");
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : "Failed to resend email");
+                  } finally {
+                    setResending(false);
                   }
                 }}
               >
-                Resend code
+                {resending ? "Sending..." : "Resend confirmation email"}
               </Button>
               <Button variant="ghost" className="w-full" onClick={() => { setVerifySent(false); setMode("signin"); }}>
                 Back to sign in
               </Button>
             </div>
+
           ) : resetSent ? (
             <div className="text-center space-y-4 py-4">
               <h2 className="text-xl font-bold">Check your email</h2>
