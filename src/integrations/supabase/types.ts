@@ -110,6 +110,27 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_request_log: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          purpose: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          purpose: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          purpose?: string
+        }
+        Relationships: []
+      }
       payment_config: {
         Row: {
           bank_account_name: string | null
@@ -244,14 +265,17 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["account_status"]
           avatar_url: string | null
           country: string | null
           created_at: string
           display_id: string
           email: string | null
+          email_verified: boolean
           full_name: string | null
           id: string
           kyc_status: Database["public"]["Enums"]["kyc_status"]
+          last_login_at: string | null
           login_alerts_enabled: boolean
           phone: string | null
           referral_code: string
@@ -263,14 +287,17 @@ export type Database = {
           vip_level: number
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["account_status"]
           avatar_url?: string | null
           country?: string | null
           created_at?: string
           display_id: string
           email?: string | null
+          email_verified?: boolean
           full_name?: string | null
           id?: string
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_login_at?: string | null
           login_alerts_enabled?: boolean
           phone?: string | null
           referral_code: string
@@ -282,14 +309,17 @@ export type Database = {
           vip_level?: number
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["account_status"]
           avatar_url?: string | null
           country?: string | null
           created_at?: string
           display_id?: string
           email?: string | null
+          email_verified?: boolean
           full_name?: string | null
           id?: string
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_login_at?: string | null
           login_alerts_enabled?: boolean
           phone?: string | null
           referral_code?: string
@@ -584,6 +614,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_status: "pending" | "active" | "blocked" | "suspended"
       app_role: "admin" | "user"
       crypto_network: "USDT_TRC20" | "USDT_BEP20" | "USDT_ERC20" | "BTC" | "ETH"
       kyc_status: "unverified" | "pending" | "verified" | "rejected"
@@ -726,6 +757,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status: ["pending", "active", "blocked", "suspended"],
       app_role: ["admin", "user"],
       crypto_network: ["USDT_TRC20", "USDT_BEP20", "USDT_ERC20", "BTC", "ETH"],
       kyc_status: ["unverified", "pending", "verified", "rejected"],
