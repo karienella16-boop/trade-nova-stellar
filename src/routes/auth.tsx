@@ -66,13 +66,35 @@ function AuthPage() {
   const submittedRef = useRef(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
-    });
     const url = new URL(window.location.href);
     const r = url.searchParams.get("ref");
     if (r) setRefCode(r.toUpperCase());
+
+    // Fallback: if the email client opened a verification link instead of the
+    // user typing the code, complete the session from the URL token.
+    const tokenHash = url.searchParams.get("token_hash") ?? url.searchParams.get("token");
+    if (tokenHash) {
+      setVerifying(true);
+      supabase.auth
+        .verifyOtp({ token_hash: tokenHash, type: "email" })
+        .then(async ({ data, error }) => {
+          if (error || !data.session) {
+            toast.error("That verification link is invalid or has expired. Please request a new code.");
+            return;
+          }
+          await finishLogin({});
+          navigate({ to: "/dashboard", replace: true });
+        })
+        .finally(() => setVerifying(false));
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/dashboard", replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
+
 
   useEffect(() => {
     if (cooldown <= 0) return;
