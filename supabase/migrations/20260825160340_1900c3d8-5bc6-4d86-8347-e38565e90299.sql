@@ -1,0 +1,14 @@
+REVOKE EXECUTE ON FUNCTION public.has_any_role(uuid, app_role[]) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_finance_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_support_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_user_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_super_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, app_role) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.has_any_role(uuid, app_role[]) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_finance_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_support_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_user_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_super_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated, service_role;
