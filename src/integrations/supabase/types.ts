@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          metadata: Json
+          record_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+          record_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+          record_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          details: Json
+          id: string
+          reason: string | null
+          target_record_id: string | null
+          target_table: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          target_record_id?: string | null
+          target_table?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          target_record_id?: string | null
+          target_table?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string
+          bank_name: string
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          bank_name: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       checkins: {
         Row: {
           checkin_date: string
@@ -170,6 +269,7 @@ export type Database = {
           amount_ngn: number | null
           amount_usd: number
           created_at: string
+          currency: string
           duration_days: number
           id: string
           method: string
@@ -177,6 +277,7 @@ export type Database = {
           receipt_url: string | null
           reference: string
           reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           tier_name: string
           tier_number: number
@@ -189,6 +290,7 @@ export type Database = {
           amount_ngn?: number | null
           amount_usd: number
           created_at?: string
+          currency?: string
           duration_days: number
           id?: string
           method: string
@@ -196,6 +298,7 @@ export type Database = {
           receipt_url?: string | null
           reference: string
           reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           tier_name: string
           tier_number: number
@@ -208,6 +311,7 @@ export type Database = {
           amount_ngn?: number | null
           amount_usd?: number
           created_at?: string
+          currency?: string
           duration_days?: number
           id?: string
           method?: string
@@ -215,6 +319,7 @@ export type Database = {
           receipt_url?: string | null
           reference?: string
           reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           tier_name?: string
           tier_number?: number
@@ -356,6 +461,80 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          created_at: string
+          id: string
+          last_reply_at: string | null
+          priority: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          last_reply_at?: string | null
+          priority?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          last_reply_at?: string | null
+          priority?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           code: string
@@ -419,6 +598,36 @@ export type Database = {
           status?: Database["public"]["Enums"]["tx_status"]
           type?: Database["public"]["Enums"]["tx_type"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      usdt_wallets: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          network: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          network: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          network?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -562,11 +771,15 @@ export type Database = {
         Row: {
           admin_notes: string | null
           amount: number
+          balance_deducted: boolean
           created_at: string
+          decline_reason: string | null
           fee: number
           id: string
           network: Database["public"]["Enums"]["crypto_network"]
+          paid_at: string | null
           processed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["tx_status"]
           to_address: string
           tx_hash: string | null
@@ -575,11 +788,15 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           amount: number
+          balance_deducted?: boolean
           created_at?: string
+          decline_reason?: string | null
           fee?: number
           id?: string
           network: Database["public"]["Enums"]["crypto_network"]
+          paid_at?: string | null
           processed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["tx_status"]
           to_address: string
           tx_hash?: string | null
@@ -588,11 +805,15 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           amount?: number
+          balance_deducted?: boolean
           created_at?: string
+          decline_reason?: string | null
           fee?: number
           id?: string
           network?: Database["public"]["Enums"]["crypto_network"]
+          paid_at?: string | null
           processed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["tx_status"]
           to_address?: string
           tx_hash?: string | null
@@ -605,6 +826,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -612,6 +840,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_finance_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_support_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_user_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       account_status: "pending" | "active" | "blocked" | "suspended"
