@@ -779,6 +779,7 @@ export type Database = {
           network: Database["public"]["Enums"]["crypto_network"]
           paid_at: string | null
           processed_at: string | null
+          review_status: string
           reviewed_by: string | null
           status: Database["public"]["Enums"]["tx_status"]
           to_address: string
@@ -796,6 +797,7 @@ export type Database = {
           network: Database["public"]["Enums"]["crypto_network"]
           paid_at?: string | null
           processed_at?: string | null
+          review_status?: string
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["tx_status"]
           to_address: string
@@ -813,6 +815,7 @@ export type Database = {
           network?: Database["public"]["Enums"]["crypto_network"]
           paid_at?: string | null
           processed_at?: string | null
+          review_status?: string
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["tx_status"]
           to_address?: string
