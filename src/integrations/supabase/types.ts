@@ -615,7 +615,13 @@ export type Database = {
     }
     Enums: {
       account_status: "pending" | "active" | "blocked" | "suspended"
-      app_role: "admin" | "user"
+      app_role:
+        | "admin"
+        | "user"
+        | "super_admin"
+        | "finance_admin"
+        | "support_admin"
+        | "user_admin"
       crypto_network: "USDT_TRC20" | "USDT_BEP20" | "USDT_ERC20" | "BTC" | "ETH"
       kyc_status: "unverified" | "pending" | "verified" | "rejected"
       plan_tier: "starter" | "silver" | "gold" | "platinum"
@@ -758,7 +764,14 @@ export const Constants = {
   public: {
     Enums: {
       account_status: ["pending", "active", "blocked", "suspended"],
-      app_role: ["admin", "user"],
+      app_role: [
+        "admin",
+        "user",
+        "super_admin",
+        "finance_admin",
+        "support_admin",
+        "user_admin",
+      ],
       crypto_network: ["USDT_TRC20", "USDT_BEP20", "USDT_ERC20", "BTC", "ETH"],
       kyc_status: ["unverified", "pending", "verified", "rejected"],
       plan_tier: ["starter", "silver", "gold", "platinum"],
